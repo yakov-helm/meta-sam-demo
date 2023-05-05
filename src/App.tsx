@@ -386,7 +386,7 @@ const App = () => {
     } else if (data instanceof URL) {
       console.log("GOT URL " + data.pathname);
     } else {
-      console.log("GOT NOT FILE OR URL " + data);
+      console.log("GOT STRING " + data);
     }
 
     try {
@@ -395,24 +395,15 @@ const App = () => {
       handleResetState();
       // setIsLoading(true);
       setShowLoadingModal(true);
-      let imgPath: string = "";
       let imgName: string = "";
       if (data instanceof URL) {
-        imgPath = data.pathname;
+        imgName = data.pathname;
       } else if (data instanceof String) {
         // TODO: find the right place where to replace it...
-        data = new URL(data.replace('/assets/', '/assets/'));
-        imgPath = data.pathname;
-      } else {
-        let newdata = "" + data;
-        data = new URL(newdata.replace('/assets/', '/assets/'));
-        imgPath = data.pathname;
-        console.log("data not an instance of string or url");
+        data = new URL(data.replace('/assets/', '/public/assets/'));
+        imgName = data.pathname;
       }
-      console.log("IMAGE PATH " + imgPath);
-      imgName = imgPath.substring(imgPath.lastIndexOf("/") + 1);
-      console.log("IMG NAME " + imgName);
-      console.log("GETTING FILE from server " + data);
+      imgName = imgName.substring(imgName.lastIndexOf("/") + 1);
       const imgData: File = data instanceof File ? data : await getFile(data);
       const img = new Image();
       img.src = URL.createObjectURL(imgData);
