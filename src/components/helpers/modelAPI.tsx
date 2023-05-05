@@ -78,16 +78,16 @@ const queryModelReturnTensors = async ({
 
   console.log("IMAGE NAME " + imgName);
 
-  // const segRequest = fetch(`${API_ENDPOINT}/${imgName}`, {
-  //   method: "POST",
-  //   body: blob
-  // }).then(async (segResponse) => {
-  //   if (shouldDownload) {
-  //     const segResponseClone = segResponse.clone();
-  //     const segResponseBlob = await segResponseClone.blob();
-  //     downloadBlob(segResponseBlob, imgName);
-  //   }
-  //   const segJSON = await segResponse.json();
+  const segRequest = fetch(`${API_ENDPOINT}/${imgName}`, {
+    method: "POST",
+    body: blob
+  }).then(async (segResponse) => {
+    if (shouldDownload) {
+      const segResponseClone = segResponse.clone();
+      const segResponseBlob = await segResponseClone.blob();
+      downloadBlob(segResponseBlob, imgName);
+    }
+    const segJSON = await segResponse.json();
 
   //   // const embedArr = segJSON.map((arrStr: string) => {
   //   //   const binaryString = window.atob(arrStr);
