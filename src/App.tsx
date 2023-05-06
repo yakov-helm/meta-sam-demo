@@ -400,14 +400,13 @@ const App = () => {
         if (!(data instanceof URL)) {
           data = new URL("" + data);
         }
-        // data = new URL(newdata.replace('/assets/', '/public/assets/'));
         console.log("GETTING FILE from server " + data);
         imgData = await getFile(data);
         imgPath = data.pathname;
         imgName = imgPath.substring(imgPath.lastIndexOf("/") + 1);
+        console.log("IMAGE PATH " + imgPath);
       }
 
-      console.log("IMAGE PATH " + imgPath);
       console.log("IMG NAME " + imgName);
 
       img.src = URL.createObjectURL(imgData);
