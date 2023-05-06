@@ -26,16 +26,14 @@ const setParmsandQueryModel = ({
   shouldDownload,
   shouldNotFetchAllModel,
 }: setParmsandQueryModelProps) => {
+  // console.log("setParmsandQueryModel");
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(width * uploadScale);
   canvas.height = Math.round(height * uploadScale);
   const ctx = canvas.getContext("2d");
-
   if (!ctx) return;
-
-  console.log("IMG NAME IN PARMSAND " + imgName);
-  
   ctx.drawImage(imgData, 0, 0, canvas.width, canvas.height);
+  // console.log("plot uploaded image");
   canvas.toBlob(
     (blob) => {
       blob &&
@@ -58,7 +56,7 @@ const loadNpyTensor = async (tensorFile: string, dType: string) => {
   let npLoader = new npyjs();
   const npArray = await npLoader.load(tensorFile);
   const tensor = new Tensor("float32", npArray.data, npArray.shape);
-  console.log("loadNpyTensor",tensor)
+  console.log("loadNpyTensor", tensor);
   return tensor;
 };
 
@@ -72,15 +70,9 @@ const queryModelReturnTensors = async ({
   shouldNotFetchAllModel,
 }: queryModelReturnTensorsProps) => {
 
-  // console.log("image_height, imgName, shouldDownload, shouldNotFetchAllModel:", image_height, imgName, shouldDownload, shouldNotFetchAllModel)
-  // console.log("pre-queryModelReturnTensors");
-  if (!API_ENDPOINT) return;
-
-  console.log("IMAGE NAME " + imgName);
-
   const segRequest = fetch(`${API_ENDPOINT}/${imgName}`, {
     method: "POST",
-    body: blob
+    body: blob,
   }).then(async (segResponse) => {
     if (shouldDownload) {
       const segResponseClone = segResponse.clone();
@@ -89,83 +81,53 @@ const queryModelReturnTensors = async ({
     }
     const segJSON = await segResponse.json();
 
-  //   // const embedArr = segJSON.map((arrStr: string) => {
-  //   //   const binaryString = window.atob(arrStr);
-  //   //   const uint8arr = new Uint8Array(binaryString.length);
-  //   //   for (let i = 0; i < binaryString.length; i++) {
-  //   //     uint8arr[i] = binaryString.charCodeAt(i);
-  //   //   }
-  //   //   const float32Arr = new Float32Array(uint8arr.buffer);
-  //   //   return float32Arr;
-  //   // });
-  //   // const lowResTensor = new Tensor("float32", embedArr[0], [1, 256, 64, 64]);
-  //   // handleSegModelResults({tensor: lowResTensor,});
-  //   // console.log(segJSON)
+    console.log("JSON", segJSON);
 
-  //   // const assetRoot = "/assets/gallery"
-  //   // Promise.resolve(loadNpyTensor(`${assetRoot}/${segJSON.npy}`, "float32")).then(
-  //   //   (embedding) => handleSegModelResults({
-  //   //     tensor:embedding
-  //   //   })
-  //   // );
+    const assetRoot = "/assets/gallery"
+    Promise.resolve(loadNpyTensor(`${assetRoot}/${segJSON.npy}`, "float32")).then(
+      (embedding) => handleSegModelResults({
+        tensor: embedding
+      })
+    );
 
-  // });
+    // const embedArr = segJSON.map((arrStr: string) => {
+    //   const binaryString = window.atob(arrStr);
+    //   const uint8arr = new Uint8Array(binaryString.length);
+    //   for (let i = 0; i < binaryString.length; i++) {
+    //     uint8arr[i] = binaryString.charCodeAt(i);
+    //   }
+    //   const float32Arr = new Float32Array(uint8arr.buffer);
+    //   return float32Arr;
+    // });
+    // const lowResTensor = new Tensor("float32", embedArr[0], [1, 256, 64, 64]);
+    // handleSegModelResults({
+    //   tensor: lowResTensor,
+    // });
   
-  // if (!ALL_MASK_API_ENDPOINT) return;
-  // console.log("post-queryModelReturnTensors");
-  const segRequest =
-    imgName && !shouldDownload
-      ? fetch(`/assets/gallery/${imgName}.txt`)
-      : fetch(`${API_ENDPOINT}`, {
-          method: "POST",
-          body: blob,
-        });
-  segRequest.then(async (segResponse) => {
-    if (shouldDownload) {
-      const segResponseClone = segResponse.clone();
-      const segResponseBlob = await segResponseClone.blob();
-      downloadBlob(segResponseBlob, imgName);
-    }
-    const segJSON = await segResponse.json();
-    const embedArr = segJSON.map((arrStr: string) => {
-      const binaryString = window.atob(arrStr);
-      const uint8arr = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        uint8arr[i] = binaryString.charCodeAt(i);
-      }
-      const float32Arr = new Float32Array(uint8arr.buffer);
-      return float32Arr;
-    });
-    const lowResTensor = new Tensor("float32", embedArr[0], [1, 256, 64, 64]);
-    handleSegModelResults({
-      tensor: lowResTensor,
-    });
   });
-
-  // if (!shouldNotFetchAllModel) {
-  //   const allImgName = imgName + ".all";
-  //   const allRequest =
-  //     imgName && !shouldDownload
-  //       ? fetch(`/assets/gallery/${allImgName}.txt`)
-  //       : fetch(`${ALL_MASK_API_ENDPOINT}`, {
-  //           method: "POST",
-  //           body: blob,
-  //         });
-  //   allRequest.then(async (allResponse) => {
-  //     if (shouldDownload) {
-  //       const allResponseClone = allResponse.clone();
-  //       const allResponseBlob = await allResponseClone.blob();
-  //       downloadBlob(allResponseBlob, allImgName);
-  //     }
-  //     const allJSON = await allResponse.json();
-  //     handleAllModelResults({
-  //       allJSON,
-  //       image_height,
-  //     });
-  //   });
-  //   allRequest.catch((e) => console.log(e));
-  // }
-
+  if (!shouldNotFetchAllModel) {
+    const allImgName = imgName + ".all";
+    const allRequest =
+      imgName && !shouldDownload
+        ? fetch(`/assets/gallery/${allImgName}.txt`)
+        : fetch(`${ALL_MASK_API_ENDPOINT}`, {
+            method: "POST",
+            body: blob,
+          });
+    allRequest.then(async (allResponse) => {
+      if (shouldDownload) {
+        const allResponseClone = allResponse.clone();
+        const allResponseBlob = await allResponseClone.blob();
+        downloadBlob(allResponseBlob, allImgName);
+      }
+      const allJSON = await allResponse.json();
+      handleAllModelResults({
+        allJSON,
+        image_height,
+      });
+    });
+    allRequest.catch((e) => console.log(e));
+  }
 };
 
 const queryEraseModel = async ({

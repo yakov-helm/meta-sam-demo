@@ -381,40 +381,35 @@ const App = () => {
     options?: { shouldNotFetchAllModel?: boolean; shouldDownload?: boolean }
   ) => {
 
-    if (data instanceof File) {
-      console.log("GOT FILE " + data.name);
-    } else if (data instanceof URL) {
-      console.log("GOT URL " + data.pathname);
-    } else {
-      console.log("GOT NOT FILE OR URL " + data);
-    }
-
     try {
       const shouldNotFetchAllModel = options?.shouldNotFetchAllModel;
       const shouldDownload = options?.shouldDownload;
       handleResetState();
       // setIsLoading(true);
       setShowLoadingModal(true);
-      let imgPath: string = "";
-      let imgName: string = "";
-      if (data instanceof URL) {
-        imgPath = data.pathname;
-      } else if (data instanceof String) {
-        // TODO: find the right place where to replace it...
-        data = new URL(data.replace('/assets/', '/assets/'));
-        imgPath = data.pathname;
-      } else {
-        let newdata = "" + data;
-        data = new URL(newdata.replace('/assets/', '/assets/'));
-        imgPath = data.pathname;
-        console.log("data not an instance of string or url");
-      }
-      console.log("IMAGE PATH " + imgPath);
-      imgName = imgPath.substring(imgPath.lastIndexOf("/") + 1);
-      console.log("IMG NAME " + imgName);
-      console.log("GETTING FILE from server " + data);
-      const imgData: File = data instanceof File ? data : await getFile(data);
+
       const img = new Image();
+      let imgData: File = new File([""], 'none');
+      let imgName: string = "";
+      let imgPath: string = "";
+
+      if (data instanceof File){
+        imgData = data;
+        imgName = data.name;
+      } else {
+        if (!(data instanceof URL)) {
+          data = new URL("" + data);
+        }
+        // data = new URL(newdata.replace('/assets/', '/public/assets/'));
+        console.log("GETTING FILE from server " + data);
+        imgData = await getFile(data);
+        imgPath = data.pathname;
+        imgName = imgPath.substring(imgPath.lastIndexOf("/") + 1);
+      }
+
+      console.log("IMAGE PATH " + imgPath);
+      console.log("IMG NAME " + imgName);
+
       img.src = URL.createObjectURL(imgData);
       img.onload = () => {
         setIsToolBarUpload(false);
