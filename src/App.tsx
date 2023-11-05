@@ -380,21 +380,35 @@ const App = () => {
     data: File | URL,
     options?: { shouldNotFetchAllModel?: boolean; shouldDownload?: boolean }
   ) => {
+
     try {
       const shouldNotFetchAllModel = options?.shouldNotFetchAllModel;
       const shouldDownload = options?.shouldDownload;
       handleResetState();
       // setIsLoading(true);
       setShowLoadingModal(true);
-      let imgName: string = "";
-      if (data instanceof URL) {
-        imgName = data.pathname;
-      } else if (typeof data === "string") {
-        imgName = new URL(data).pathname;
-      }
-      imgName = imgName.substring(imgName.lastIndexOf("/") + 1);
-      const imgData: File = data instanceof File ? data : await getFile(data);
+
       const img = new Image();
+      let imgData: File = new File([""], 'none');
+      let imgName: string = "";
+      let imgPath: string = "";
+
+      if (data instanceof File){
+        imgData = data;
+        imgName = data.name;
+      } else {
+        if (!(data instanceof URL)) {
+          data = new URL("" + data);
+        }
+        console.log("GETTING FILE from server " + data);
+        imgData = await getFile(data);
+        imgPath = data.pathname;
+        imgName = imgPath.substring(imgPath.lastIndexOf("/") + 1);
+        console.log("IMAGE PATH " + imgPath);
+      }
+
+      console.log("IMG NAME " + imgName);
+
       img.src = URL.createObjectURL(imgData);
       img.onload = () => {
         setIsToolBarUpload(false);
